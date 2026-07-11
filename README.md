@@ -423,6 +423,208 @@ If seed SQL files should not be published, also add:
 
 ---
 
+## Docker
+
+The app can be run with Docker and Docker Compose.
+
+The Docker setup supports:
+
+- configurable host port
+- configurable SQLite database file
+- default fallback to `./instance/programs.db`
+
+---
+
+### Docker Files
+
+The repository includes:
+
+```txt
+Dockerfile
+docker-compose.yml
+.dockerignore
+.env.example
+```
+
+---
+
+### Default Usage
+
+Run the app with the default configuration:
+
+```bash
+docker compose up -d --build
+```
+
+By default, the app will be available at:
+
+```txt
+http://localhost:8000
+```
+
+The default database file is:
+
+```txt
+./instance/programs.db
+```
+
+---
+
+### Configure the Port
+
+The exposed host port can be changed with `APP_PORT`.
+
+Example:
+
+```bash
+APP_PORT=5050 docker compose up -d --build
+```
+
+The app will then be available at:
+
+```txt
+http://localhost:5050
+```
+
+---
+
+### Configure the Database File
+
+By default, Docker Compose uses:
+
+```txt
+./instance/programs.db
+```
+
+You can provide a different SQLite database file with `PROGRAMS_DB_PATH`.
+
+Example:
+
+```bash
+PROGRAMS_DB_PATH=/home/user/data/custom-programs.db docker compose up -d --build
+```
+
+Inside the container, the selected database is mounted as:
+
+```txt
+/data/programs.db
+```
+
+The Flask app reads it through:
+
+```txt
+sqlite:////data/programs.db
+```
+
+---
+
+### Configure with `.env`
+
+You can also use a local `.env` file.
+
+Copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+Example `.env`:
+
+```env
+APP_PORT=8000
+PROGRAMS_DB_PATH=./instance/programs.db
+```
+
+Then run:
+
+```bash
+docker compose up -d --build
+```
+
+Docker Compose will automatically read the `.env` file from the project root.
+
+---
+
+### Use a Custom Database
+
+To use a custom database file:
+
+```env
+APP_PORT=5050
+PROGRAMS_DB_PATH=/home/user/databases/lesmills-programs.db
+```
+
+Then run:
+
+```bash
+docker compose up -d --build
+```
+
+The app will be available at:
+
+```txt
+http://localhost:5050
+```
+
+and will use:
+
+```txt
+/home/user/databases/lesmills-programs.db
+```
+
+as the program metadata database.
+
+---
+
+### Important Notes
+
+The database file specified in `PROGRAMS_DB_PATH` should already exist.
+
+If the file does not exist, Docker may create an empty file at that path, and the app may fail because the required tables are missing.
+
+To create the default database before running Docker:
+
+```bash
+python -m app.seed.create_programs_db
+```
+
+Then import metadata if needed:
+
+```bash
+sqlite3 instance/programs.db < seed_bodycombat.sql
+sqlite3 instance/programs.db < seed_bodypump_with_united.sql
+```
+
+---
+
+### Useful Commands
+
+Start or rebuild the container:
+
+```bash
+docker compose up -d --build
+```
+
+View logs:
+
+```bash
+docker compose logs -f
+```
+
+Stop the container:
+
+```bash
+docker compose down
+```
+
+Restart the container:
+
+```bash
+docker compose restart
+```
+
+---
+
 ## Metadata
 
 The project may use public track metadata such as release number, title, artist, slot, duration, genre, tags, and difficulty labels.

@@ -1,0 +1,11 @@
+services:
+  lesmills-playlist-builder:
+    build: .
+    container_name: lesmills-playlist-builder
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      PROGRAMS_DATABASE_URI: "sqlite:////data/programs.db"
+    volumes:
+      - "${PROGRAMS_DB_PATH:-./instance/programs.db}:/data/programs.db"
+    restart: unless-stopped

@@ -3,4 +3,12 @@ lesmills/
 __pycache__/
 *.pyc
 .env
-instance/
+# Ignore local instance files by default
+instance/*
+
+# But allow the public program metadata database
+!instance/programs.db
+
+# Ignore other SQLite databases
+*.db
+!instance/programs.db
