@@ -206,6 +206,62 @@ track_id
 tag
 ```
 
+## Grouped Tracks
+
+Some programs include tracks that are split into multiple parts but should be used together in a playlist.
+
+Examples:
+
+```txt
+1A + 1B
+1A + 1B + 1C
+5A + 5B
+```
+
+These tracks are stored as separate rows in the database, but they share the same `group_key`.
+
+This means the app can keep the original track metadata while still treating those tracks as one playlist option.
+
+Example:
+
+```txt
+BC10001A → group_key = BC10001
+BC10001B → group_key = BC10001
+```
+
+In the playlist builder, selecting that group adds both tracks together.
+
+The `tracks` table includes extra fields for this:
+
+```txt
+source_code
+group_key
+segment
+variant_type
+source_track_number
+```
+
+These fields are used to support:
+
+- multi-part tracks
+- bonus tracks
+- alternative tracks
+- future program-specific track structures
+
+Bonus tracks use:
+
+```txt
+variant_type = bonus
+```
+
+Alternative tracks use:
+
+```txt
+variant_type = alternative
+```
+
+This keeps the database flexible without requiring a different table structure for each program.
+
 ---
 
 ## Routes
