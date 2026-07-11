@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Unofficial class planning tool</p>
+
+    <h1>Build smarter Les Mills-style playlists</h1>
+
+    <p>
+        Browse programs, explore releases, compare track structures, and later
+        generate personalized playlists based on the releases you own and the
+        songs you enjoy most.
+    </p>
+
+    <p>
+        This first version is a public release browser. The next version will add
+        accounts, owned releases, song ratings, saved playlists, and weighted
+        random playlist generation.
+    </p>
+</section>
+
+<section>
+    <h2>Programs in this project</h2>
+
+    <div class="card-grid">
+        {% for program in programs %}
+            <article class="card">
+                <h3>{{ program.name }}</h3>
+                <p>{{ program.description }}</p>
+
+                <a class="button" href="{{ url_for('public.program_detail', slug=program.slug) }}">
+                    View {{ program.name }}
+                </a>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

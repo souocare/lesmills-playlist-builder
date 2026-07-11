@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <p>
+        <a href="{{ url_for('public.home') }}">← Back to homepage</a>
+    </p>
+
+    <p class="eyebrow">Program builder</p>
+
+    <h1>{{ program.name }}</h1>
+    <p>{{ program.description }}</p>
+</section>
+
+<script id="playlist-builder-data" type="application/json">
+    {
+        "releases": {{ releases | tojson }},
+        "trackSlots": {{ playlist_slots | tojson }}
+    }
+</script>
+
+<form method="post" class="builder-form">
+    <section class="builder-panel catalog-panel">
+        <div class="step-heading">
+            <span class="step-number">1</span>
+
+            <div>
+                <h2>Select your catalog</h2>
+                <p>
+                    Choose the releases this builder can use before creating your playlist.
+                </p>
+            </div>
+        </div>
+
+        <div class="catalog-controls">
+            <div class="form-group">
+                <label for="oldest_release_number">
+                    Oldest release you own
+                </label>
+
+                <select id="oldest_release_number" name="oldest_release_number">
+                    <option value="">Use all releases</option>
+
+                    {% for release in releases_oldest_first %}
+                        <option
+                            value="{{ release.display_number }}"
+                            {% if oldest_release_number == release.display_number %}selected{% endif %}
+                        >
+                            {{ release.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <small>
+                    Uses this release and everything newer.
+                </small>
+            </div>
+
+            <label class="toggle-card catalog-toggle">
+                <input
+                    type="checkbox"
+                    name="exclude_latest_release"
+                    {% if exclude_latest_release %}checked{% endif %}
+                >
+
+                <span>
+                    <strong>Exclude latest release</strong>
+                    <small>Skip the newest release for now.</small>
+                </span>
+            </label>
+
+            <div class="form-group">
+                <label for="most_recent_limit">
+                    Recent release limit
+                </label>
+
+                <select id="most_recent_limit" name="most_recent_limit">
+                    <option value="">No limit</option>
+
+                    {% for amount in [5, 10, 15, 20, 25, 30] %}
+                        <option
+                            value="{{ amount }}"
+                            {% if most_recent_limit == amount %}selected{% endif %}
+                        >
+                            Most recent {{ amount }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <small>
+                    Applied after oldest/latest filters.
+                </small>
+            </div>
+        </div>
+
+        <div class="form-group catalog-exclusions">
+            <label>
+                Exclude specific releases
+            </label>
+
+            <div class="compact-release-grid">
+                {% for release in releases %}
+                    <label class="compact-check">
+                        <input
+                            type="checkbox"
+                            name="excluded_release_numbers"
+                            value="{{ release.sort_order }}"
+                            {% if release.sort_order | int in manually_excluded_release_numbers %}checked{% endif %}
+                        >
+
+                        <span>{{ release.display_number }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <small>
+                These releases will not be used, even if they match the catalog settings above.
+            </small>
+        </div>
+
+        <!-- <div class="catalog-summary">
+            <strong>Catalog currently selected:</strong>
+
+            {% for release in catalog_releases %}
+                <span>{{ release.display_number }}</span>
+            {% endfor %}
+        </div> -->
+    </section>
+
+    <section class="builder-main-layout">
+        <div class="builder-panel options-panel">
+            <div class="step-heading">
+                <span class="step-number">2</span>
+
+                <div>
+                    <h2>Search & options</h2>
+                    <p>
+                        Search your catalog or fill your playlist using filters.
+                    </p>
+                </div>
+            </div>
+
+            <div class="search-catalog-card">
+                <label for="catalog_search" class="search-label">
+                    Search your catalog
+                </label>
+
+                <input
+                    id="catalog_search"
+                    class="input-field"
+                    type="text"
+                    placeholder="Search by song title or artist..."
+                    autocomplete="off"
+                >
+
+                <p id="search_count" class="search-count">
+                    Start typing to search your catalog.
+                </p>
+
+                <div id="search_results" class="search-results"></div>
+            </div>
+
+            <div class="random-fill-card">
+                <h3>Build track by track</h3>
+
+                <p>
+                    Use the Random or Browse buttons on each playlist slot, or fill all tracks at once.
+                </p>
+
+                <button
+                    id="fill_all_randomly"
+                    class="track-button track-button-primary"
+                    type="button"
+                >
+                    Fill All Randomly
+                </button>
+            </div>
+
+            <div class="theme-fill-card">
+                <h3>Fill with a theme</h3>
+
+                <p>
+                    Choose one or more filters, then randomly fill matching tracks.
+                </p>
+
+                <div class="theme-filter-group">
+                    <label>Themes</label>
+
+                    <div class="filter-pill-grid">
+                        <button type="button" class="filter-pill" data-theme-filter="Beast Mode">💪 Beast Mode</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Break-Up Songs">💔 Break-Up Songs</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Emo">🎸 Emo</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Halloween">🎃 Halloween</button>
+                        <button type="button" class="filter-pill" data-theme-filter="New Year's Eve">🥳 New Year's Eve</button>
+                        <button type="button" class="filter-pill" data-theme-filter="P!nk">💗 P!nk</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Positive Vibes">✨ Positive Vibes</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Pride">🌈 Pride</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Sing-Along">🎤 Sing-Along</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Spicy">🌶️ Spicy</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Spring">🌷 Spring</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Summer">☀️ Summer</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Valentine's Day">💘 Valentine's Day</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Winter">❄️ Winter</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Women of Pop">👩‍🎤 Women of Pop</button>
+                    </div>
+                </div>
+
+                <div class="theme-filter-group">
+                    <label>Difficulty & Length</label>
+
+                    <div class="filter-pill-grid">
+                        <button type="button" class="filter-pill" data-theme-filter="Easy">😅 Easy</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Medium">🔥 Medium</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Hard">💀 Hard</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Short">⏱️ Short</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Long">⌛ Long</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Easy to Learn">🧠 Easy to Learn</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Hard Workout">🥵 Hard Workout</button>
+                    </div>
+                </div>
+
+                <div class="theme-filter-group">
+                    <label>Genres</label>
+
+                    <div class="filter-pill-grid">
+                        <button type="button" class="filter-pill" data-theme-filter="EDM">EDM</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Hip-Hop">Hip-Hop</button>
+                        <button type="button" class="filter-pill" data-theme-filter="K-Pop">K-Pop</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Latin">Latin</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Pop">Pop</button>
+                        <button type="button" class="filter-pill" data-theme-filter="Rock">Rock</button>
+                    </div>
+                </div>
+
+                <div class="theme-actions">
+                    <button
+                        id="apply_theme_fill"
+                        class="track-button track-button-primary"
+                        type="button"
+                        disabled
+                    >
+                        Apply Theme & Fill
+                    </button>
+
+                    <span id="theme_filter_hint" class="theme-filter-hint">
+                        Select filters first
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="playlist-builder-card">
+                <div class="step-heading playlist-step-heading">
+                    <span class="step-number">3</span>
+                    <div>
+                        <h2>Your Playlist</h2>
+                        <p>
+                            Use the options on the left to build your class playlist.
+                        </p>
+                    </div>
+                </div>
+
+            <div class="track-card-list">
+                {% for playlist_slot in playlist_slots %}
+                    {% set slot_number = playlist_slot.slot %}
+                    {% set selected_track = playlist_slot.selected_track %}
+                    {% set all_count = all_track_counts_by_slot.get(slot_number, 0) %}
+                    {% set filtered_count = filtered_track_counts_by_slot.get(slot_number, 0) %}
+
+                    <article class="playlist-track-card" data-playlist-slot="{{ slot_number }}">
+                        <div class="track-card-header">
+                            <h4>
+                                {{ playlist_slot.slot }} - {{ playlist_slot.slot_name }}
+                            </h4>
+
+                            {% if filtered_count == 0 %}
+                                <span class="track-count-warning">
+                                    No filtered tracks
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="selected-track empty-track" data-selected-track="{{ slot_number }}" >
+                            <span>No track selected yet.</span>
+                        </div>
+
+                        <div class="track-actions-grid">
+                            <button
+                                class="track-button track-button-primary"
+                                type="submit"
+                                name="random_slot_number"
+                                value="{{ slot_number }}"
+                                {% if filtered_count == 0 %}disabled{% endif %}
+                            >
+                                Random
+                            </button>
+
+                            <button class="track-button track-button-secondary" type="button" data-slot-number="{{ slot_number }}">
+                                Browse ({{ all_count }})
+                            </button>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <div
+        id="replace_tracks_modal"
+        class="modal-backdrop"
+        hidden
+    >
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="replace_tracks_modal_title">
+            <h3 id="replace_tracks_modal_title">
+                Replace existing tracks?
+            </h3>
+
+            <p>
+                Some playlist slots already have tracks. Do you want to replace all existing matching slots,
+                or only fill the empty ones?
+            </p>
+
+            <div class="modal-actions">
+                <button
+                    id="replace_all_tracks"
+                    class="track-button track-button-primary"
+                    type="button"
+                >
+                    Yes, replace ALL
+                </button>
+
+                <button
+                    id="keep_existing_tracks"
+                    class="track-button track-button-secondary"
+                    type="button"
+                >
+                    No, don't replace anything
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<section>
+    <h2>Releases</h2>
+
+    <div class="card-grid">
+        {% for release in releases %}
+            <article class="card">
+                <h3>{{ release.title }}</h3>
+
+                {% if release.year or release.quarter %}
+                    <p>
+                        {% if release.year %}
+                            {{ release.year }}
+                        {% endif %}
+
+                        {% if release.quarter %}
+                            · {{ release.quarter }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+
+                <a class="button" href="{{ url_for(
+                    'public.release_detail',
+                    slug=program.slug,
+                    release_code=release.code
+                ) }}">
+                    View release
+                </a>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

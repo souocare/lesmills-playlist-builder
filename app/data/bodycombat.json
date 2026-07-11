@@ -1,0 +1,375 @@
+{
+  "program": {
+    "name": "BODYCOMBAT",
+    "slug": "bodycombat",
+    "description": "Martial arts-inspired cardio workout combining moves from karate, boxing, taekwondo, tai chi, and muay thai."
+  },
+  "track_slots": [
+    {
+      "number": 1,
+      "name": "Upper Body Warmup"
+    },
+    {
+      "number": 2,
+      "name": "Combat 1"
+    },
+    {
+      "number": 3,
+      "name": "Power Training 1"
+    },
+    {
+      "number": 4,
+      "name": "Combat 2"
+    },
+    {
+      "number": 5,
+      "name": "Power Training 2"
+    },
+    {
+      "number": 6,
+      "name": "Combat 3"
+    },
+    {
+      "number": 7,
+      "name": "Muay Thai"
+    },
+    {
+      "number": 8,
+      "name": "Power Training 3"
+    },
+    {
+      "number": 9,
+      "name": "Conditioning"
+    },
+    {
+      "number": 10,
+      "name": "Cooldown"
+    }
+  ],
+  "releases": [
+    {
+      "number": 100,
+      "title": "BODYCOMBAT 100",
+      "year": 2024,
+      "quarter": "Q2",
+      "tracks": [
+        {
+          "slot": 1,
+          "slot_name": "Upper Body Warmup",
+          "title": "Ignite the Fire",
+          "artist": "Nova Pulse",
+          "duration": "4:38",
+          "genre": "EDM",
+          "tags": ["Positive Vibes", "Warmup", "Summer"],
+          "difficulty": "Easy"
+        },
+        {
+          "slot": 2,
+          "slot_name": "Combat 1",
+          "title": "Strike First",
+          "artist": "Urban Riot",
+          "duration": "5:12",
+          "genre": "Hip-Hop",
+          "tags": ["Beast Mode", "Spicy"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 3,
+          "slot_name": "Power Training 1",
+          "title": "No Turning Back",
+          "artist": "Voltage Crew",
+          "duration": "5:45",
+          "genre": "Rock",
+          "tags": ["Hard Workout", "Beast Mode"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 4,
+          "slot_name": "Combat 2",
+          "title": "Phoenix Kick",
+          "artist": "Skyline Echo",
+          "duration": "4:56",
+          "genre": "Pop",
+          "tags": ["Positive Vibes", "Sing-Along"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 5,
+          "slot_name": "Power Training 2",
+          "title": "Heavy Hands",
+          "artist": "Titan Mode",
+          "duration": "5:32",
+          "genre": "EDM",
+          "tags": ["Beast Mode", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 6,
+          "slot_name": "Combat 3",
+          "title": "Shadow Dance",
+          "artist": "Luna Wave",
+          "duration": "4:48",
+          "genre": "Latin",
+          "tags": ["Spicy", "Summer"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 7,
+          "slot_name": "Muay Thai",
+          "title": "Elbow Storm",
+          "artist": "Rage District",
+          "duration": "6:08",
+          "genre": "Rock",
+          "tags": ["Hard Workout", "Beast Mode", "Long"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 8,
+          "slot_name": "Power Training 3",
+          "title": "Final Round",
+          "artist": "Pulse Factory",
+          "duration": "5:58",
+          "genre": "EDM",
+          "tags": ["Beast Mode", "New Year's Eve"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 9,
+          "slot_name": "Conditioning",
+          "title": "Core Control",
+          "artist": "Motion Lab",
+          "duration": "4:22",
+          "genre": "Pop",
+          "tags": ["Easy to Learn", "Short"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 10,
+          "slot_name": "Cooldown",
+          "title": "Breathe Again",
+          "artist": "Mila North",
+          "duration": "3:58",
+          "genre": "Pop",
+          "tags": ["Cooldown", "Positive Vibes", "Short"],
+          "difficulty": "Easy"
+        }
+      ]
+    },
+    {
+      "number": 99,
+      "title": "BODYCOMBAT 99",
+      "year": 2024,
+      "quarter": "Q1",
+      "tracks": [
+        {
+          "slot": 1,
+          "slot_name": "Upper Body Warmup",
+          "title": "Ready to Move",
+          "artist": "The Neon Club",
+          "duration": "4:44",
+          "genre": "Pop",
+          "tags": ["Positive Vibes", "Warmup"],
+          "difficulty": "Easy"
+        },
+        {
+          "slot": 2,
+          "slot_name": "Combat 1",
+          "title": "Knockout City",
+          "artist": "Bass Republic",
+          "duration": "5:05",
+          "genre": "EDM",
+          "tags": ["Beast Mode", "Spicy"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 3,
+          "slot_name": "Power Training 1",
+          "title": "Run the Night",
+          "artist": "Aftershock",
+          "duration": "5:36",
+          "genre": "Hip-Hop",
+          "tags": ["Hard Workout", "New Year's Eve"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 4,
+          "slot_name": "Combat 2",
+          "title": "Tiger Step",
+          "artist": "Kairo Sun",
+          "duration": "4:50",
+          "genre": "Latin",
+          "tags": ["Summer", "Spicy"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 5,
+          "slot_name": "Power Training 2",
+          "title": "Push Through",
+          "artist": "Iron Hearts",
+          "duration": "5:18",
+          "genre": "Rock",
+          "tags": ["Beast Mode", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 6,
+          "slot_name": "Combat 3",
+          "title": "Electric Guard",
+          "artist": "Pixel Storm",
+          "duration": "4:42",
+          "genre": "K-Pop",
+          "tags": ["Sing-Along", "Positive Vibes"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 7,
+          "slot_name": "Muay Thai",
+          "title": "Eight Limbs",
+          "artist": "War Drum",
+          "duration": "6:14",
+          "genre": "EDM",
+          "tags": ["Hard Workout", "Long", "Beast Mode"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 8,
+          "slot_name": "Power Training 3",
+          "title": "One More Rep",
+          "artist": "Max Velocity",
+          "duration": "5:50",
+          "genre": "Hip-Hop",
+          "tags": ["Beast Mode", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 9,
+          "slot_name": "Conditioning",
+          "title": "Abs on Fire",
+          "artist": "Fit District",
+          "duration": "4:16",
+          "genre": "Pop",
+          "tags": ["Short", "Easy to Learn"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 10,
+          "slot_name": "Cooldown",
+          "title": "Slow Horizon",
+          "artist": "Amara Blue",
+          "duration": "4:05",
+          "genre": "Pop",
+          "tags": ["Cooldown", "Winter"],
+          "difficulty": "Easy"
+        }
+      ]
+    },
+    {
+      "number": 98,
+      "title": "BODYCOMBAT 98",
+      "year": 2023,
+      "quarter": "Q4",
+      "tracks": [
+        {
+          "slot": 1,
+          "slot_name": "Upper Body Warmup",
+          "title": "Wake the Wolves",
+          "artist": "Sound Arena",
+          "duration": "4:35",
+          "genre": "Rock",
+          "tags": ["Warmup", "Beast Mode"],
+          "difficulty": "Easy"
+        },
+        {
+          "slot": 2,
+          "slot_name": "Combat 1",
+          "title": "Fast Jab",
+          "artist": "Metro Kicks",
+          "duration": "4:59",
+          "genre": "Hip-Hop",
+          "tags": ["Spicy", "Easy to Learn"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 3,
+          "slot_name": "Power Training 1",
+          "title": "Heart Rate Rising",
+          "artist": "Cardio Kings",
+          "duration": "5:41",
+          "genre": "EDM",
+          "tags": ["Hard Workout", "Beast Mode"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 4,
+          "slot_name": "Combat 2",
+          "title": "Cobra Flow",
+          "artist": "Sahara Beats",
+          "duration": "4:47",
+          "genre": "Latin",
+          "tags": ["Spicy", "Summer"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 5,
+          "slot_name": "Power Training 2",
+          "title": "Break the Wall",
+          "artist": "Redline Echo",
+          "duration": "5:27",
+          "genre": "Rock",
+          "tags": ["Beast Mode", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 6,
+          "slot_name": "Combat 3",
+          "title": "Mirror Strike",
+          "artist": "Velvet Riot",
+          "duration": "4:52",
+          "genre": "Pop",
+          "tags": ["Women of Pop", "Sing-Along"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 7,
+          "slot_name": "Muay Thai",
+          "title": "Knee Drive",
+          "artist": "Temple Bass",
+          "duration": "6:02",
+          "genre": "EDM",
+          "tags": ["Long", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 8,
+          "slot_name": "Power Training 3",
+          "title": "Overload",
+          "artist": "The Circuit",
+          "duration": "5:55",
+          "genre": "EDM",
+          "tags": ["Beast Mode", "Hard Workout"],
+          "difficulty": "Hard"
+        },
+        {
+          "slot": 9,
+          "slot_name": "Conditioning",
+          "title": "Hold Strong",
+          "artist": "Core Unit",
+          "duration": "4:28",
+          "genre": "Pop",
+          "tags": ["Short", "Easy to Learn"],
+          "difficulty": "Medium"
+        },
+        {
+          "slot": 10,
+          "slot_name": "Cooldown",
+          "title": "Light After Dark",
+          "artist": "Eli Rivers",
+          "duration": "4:11",
+          "genre": "Pop",
+          "tags": ["Cooldown", "Positive Vibes"],
+          "difficulty": "Easy"
+        }
+      ]
+    }
+  ]
+}

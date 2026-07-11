@@ -1,0 +1,14 @@
+{
+  "programs": [
+    {
+        "name": "BODYCOMBAT",
+        "slug": "bodycombat",
+        "description": "Martial arts-inspired cardio workout with tracks for warmup, combat, power, conditioning, and cooldown."
+    },
+    {
+        "name": "BODYPUMP",
+        "slug": "bodypump",
+        "description": "Barbell-based strength endurance workout."
+    }
+  ]
+}

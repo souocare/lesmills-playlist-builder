@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <p>
+        <a href="{{ url_for('public.program_detail', slug=program.slug) }}">
+            ← Back to {{ program.name }}
+        </a>
+    </p>
+
+    <h1>{{ release.title }}</h1>
+
+    {% if release.display_number %}
+        <p class="muted">Release {{ release.display_number }}</p>
+    {% endif %}
+    {% if release.year or release.quarter %}
+        <p>
+            {% if release.year %}
+                Release year: {{ release.year }}
+            {% endif %}
+            {% if release.quarter %}
+                · {{ release.quarter }}
+            {% endif %}
+        </p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Tracks</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Track type</th>
+                <th>Song</th>
+                <th>Artist</th>
+                <th>Duration</th>
+                <th>Genre</th>
+                <th>Difficulty</th>
+                <th>Tags</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for track in release.tracks %}
+                <tr>
+                    <td>{{ track.slot }}</td>
+                    <td>{{ track.slot_name }}</td>
+                    <td>{{ track.title }}</td>
+                    <td>{{ track.artist }}</td>
+                    <td>{{ track.duration or "—" }}</td>
+                    <td>{{ track.genre or "—" }}</td>
+                    <td>{{ track.difficulty or "—" }}</td>
+                    <td>
+                        {% if track.tags %}
+                            {{ track.tags | join(", ") }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
