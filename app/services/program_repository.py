@@ -39,6 +39,11 @@ def release_to_dict(release: Release) -> dict:
         "tracks": [
             {
                 "id": track.id,
+                "source_code": track.source_code,
+                "group_key": track.group_key,
+                "segment": track.segment,
+                "variant_type": track.variant_type or "main",
+                "source_track_number": track.source_track_number,
                 "slot": track.slot.number,
                 "slot_name": track.slot.name,
                 "title": track.title,

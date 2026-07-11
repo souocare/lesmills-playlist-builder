@@ -27,6 +27,9 @@
     const excludedReleaseOptions = document.querySelectorAll("[data-release-code]");
     const excludedReleaseHiddenInputs = document.querySelectorAll("[data-release-hidden-input]");
 
+    const includeBonusTracksCheckbox = document.getElementById("include_bonus_tracks");
+    const includeAlternativeTracksCheckbox = document.getElementById("include_alternative_tracks");
+
     let pendingFillSelections = [];
 
     function getOldestReleaseNumber() {
@@ -188,27 +191,134 @@
         return sortNewestFirst(catalog);
     }
 
+    function getTrackGroupKey(track) {
+        return track.groupKey || track.sourceCode || `${track.releaseCode}-${track.slot}-${track.title}`;
+    }
+
+
+    function mergeUniqueValues(values) {
+        return Array.from(
+            new Set(
+                values
+                    .filter(Boolean)
+                    .map((value) => String(value).trim())
+                    .filter(Boolean)
+            )
+        );
+    }
+
+
+    function buildTrackGroupsFromTracks(tracks) {
+        const groupsByKey = new Map();
+
+        tracks.forEach((track) => {
+            const groupKey = getTrackGroupKey(track);
+
+            if (!groupsByKey.has(groupKey)) {
+                groupsByKey.set(groupKey, {
+                    id: groupKey,
+                    groupKey,
+                    slot: track.slot,
+                    slotName: track.slotName,
+                    releaseNumber: track.releaseNumber,
+                    releaseCode: track.releaseCode,
+                    releaseTitle: track.releaseTitle,
+                    variantType: track.variantType || "main",
+                    genre: null,
+                    difficulty: null,
+                    tags: [],
+                    tracks: [],
+                });
+            }
+
+            const group = groupsByKey.get(groupKey);
+
+            group.tracks.push(track);
+            group.tags = mergeUniqueValues([
+                ...group.tags,
+                ...(track.tags || []),
+            ]);
+        });
+
+        return Array.from(groupsByKey.values()).map((group) => {
+            const sortedTracks = [...group.tracks].sort((a, b) => {
+                return String(a.sourceTrackNumber).localeCompare(
+                    String(b.sourceTrackNumber),
+                    undefined,
+                    { numeric: true }
+                );
+            });
+
+            const genres = mergeUniqueValues(sortedTracks.map((track) => track.genre));
+            const difficulties = mergeUniqueValues(sortedTracks.map((track) => track.difficulty));
+
+            return {
+                ...group,
+                tracks: sortedTracks,
+                title: sortedTracks.map((track) => track.title).join(" / "),
+                artist: mergeUniqueValues(sortedTracks.map((track) => track.artist)).join(" / "),
+                duration: sortedTracks
+                    .map((track) => track.duration)
+                    .filter(Boolean)
+                    .join(" + "),
+                genre: genres.join(", ") || null,
+                difficulty: difficulties.join(", ") || null,
+                sourceTrackNumber: sortedTracks
+                    .map((track) => track.sourceTrackNumber)
+                    .filter(Boolean)
+                    .join(" + "),
+            };
+        });
+    }
+
+    function shouldIncludeTrackVariant(track) {
+        const variantType = track.variantType || "main";
+
+        if (variantType === "main") {
+            return true;
+        }
+
+        if (variantType === "bonus") {
+            return includeBonusTracksCheckbox?.checked === true;
+        }
+
+        if (variantType === "alternative") {
+            return includeAlternativeTracksCheckbox?.checked === true;
+        }
+
+        return false;
+    }
+
     function getTracksFromCatalog() {
         const catalog = getFilteredCatalogReleases();
 
-        return catalog.flatMap((release) => {
-            return (release.tracks || []).map((track, index) => {
-                return {
-                    id: `${release.code || release.display_number || release.number}-${track.slot}-${index}`,
-                    title: track.title,
-                    artist: track.artist,
-                    slot: track.slot,
-                    slotName: track.slot_name,
-                    releaseNumber: release.display_number || release.number || release.code,
-                    releaseCode: release.code || String(release.number),
-                    releaseTitle: release.title,
-                    duration: track.duration || track.duration_seconds || null,
-                    genre: track.genre || null,
-                    tags: track.tags || [],
-                    difficulty: track.difficulty || null,
-                };
-            });
+        const tracks = catalog.flatMap((release) => {
+            return (release.tracks || [])
+                .map((track, index) => {
+                    return {
+                        id: `${release.code || release.display_number || release.number}-${track.slot}-${index}`,
+                        sourceCode: track.source_code || null,
+                        groupKey: track.group_key || null,
+                        segment: track.segment || null,
+                        variantType: track.variant_type || "main",
+                        sourceTrackNumber: track.source_track_number || String(track.slot),
+                        title: track.title,
+                        artist: track.artist,
+                        slot: track.slot,
+                        slotName: track.slot_name,
+                        releaseNumber: release.display_number || release.number || release.code,
+                        releaseCode: release.code || String(release.number),
+                        releaseTitle: release.title,
+                        duration: track.duration || track.duration_seconds || null,
+                        genre: track.genre || null,
+                        tags: track.tags || [],
+                        difficulty: track.difficulty || null,
+                    };
+                })
+                .filter(shouldIncludeTrackVariant);
         });
+
+        return buildTrackGroupsFromTracks(tracks);
     }
 
     function normaliseText(value) {
@@ -244,7 +354,15 @@
     }
 
     function formatTrackMeta(track) {
-        const parts = [`Release: ${track.releaseNumber}`];
+        const parts = [`R${track.releaseNumber}`];
+
+        if (track.variantType === "bonus") {
+            parts.push("Bonus");
+        }
+
+        if (track.variantType === "alternative") {
+            parts.push("Alternative");
+        }
 
         if (track.duration) {
             parts.push(track.duration);
@@ -784,6 +902,20 @@
                 closeExcludedReleasesDropdown();
             }
         });
+
+        if (includeBonusTracksCheckbox) {
+            includeBonusTracksCheckbox.addEventListener("change", () => {
+                updateCatalogSummary();
+                renderSearchResults();
+            });
+        }
+
+        if (includeAlternativeTracksCheckbox) {
+            includeAlternativeTracksCheckbox.addEventListener("change", () => {
+                updateCatalogSummary();
+                renderSearchResults();
+            });
+        }
 
         updateExcludedReleasesSummary();
     }

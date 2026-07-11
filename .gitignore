@@ -12,3 +12,7 @@ instance/*
 # Ignore other SQLite databases
 *.db
 !instance/programs.db
+
+
+# Ignore local instance files by default
+scripts/

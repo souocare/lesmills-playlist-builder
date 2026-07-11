@@ -73,6 +73,12 @@ class Track(db.Model):
     release_id = db.Column(db.Integer, db.ForeignKey("releases.id"), nullable=False)
     slot_id = db.Column(db.Integer, db.ForeignKey("track_slots.id"), nullable=False)
 
+    source_code = db.Column(db.String(50), nullable=True)
+    group_key = db.Column(db.String(50), nullable=True)
+    segment = db.Column(db.String(10), nullable=True)
+    variant_type = db.Column(db.String(20), nullable=False, default="main")
+    source_track_number = db.Column(db.String(20), nullable=True)
+
     title = db.Column(db.String(200), nullable=False)
     artist = db.Column(db.String(200), nullable=False)
     duration = db.Column(db.String(20), nullable=True)
