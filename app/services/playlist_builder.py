@@ -37,12 +37,12 @@ def sort_releases_oldest_first(releases: list[dict]) -> list[dict]:
 
 
 def get_catalog_releases(
-    releases: list[dict[str, Any]],
+    releases: list[dict],
     oldest_release_number: int | None = None,
     exclude_latest_release: bool = False,
     most_recent_limit: int | None = None,
-    manually_excluded_release_numbers: list[int] | None = None,
-) -> list[dict[str, Any]]:
+    manually_excluded_release_codes: list[str] | None = None,
+) -> list[dict]:
     manually_excluded_release_numbers = manually_excluded_release_numbers or []
 
     catalog = sort_releases_oldest_first(releases)
@@ -71,11 +71,11 @@ def get_catalog_releases(
         catalog = catalog[:most_recent_limit]
         catalog = sort_releases_oldest_first(catalog)
 
-    if manually_excluded_release_numbers:
+    if manually_excluded_release_codes:
         catalog = [
             release
             for release in catalog
-            if int(release["sort_order"]) not in manually_excluded_release_numbers
+            if str(release.get("code")) not in manually_excluded_release_codes
         ]
 
     return catalog

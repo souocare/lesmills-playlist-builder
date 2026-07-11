@@ -49,6 +49,12 @@ def parse_int_list(field_name: str) -> list[int]:
 
     return parsed_values
 
+def parse_string_list(field_name: str) -> list[str]:
+    return [
+        value
+        for value in request.form.getlist(field_name)
+        if value
+    ]
 
 @public_bp.route("/")
 def home():
@@ -76,7 +82,7 @@ def program_detail(slug: str):
     oldest_release_number = None
     exclude_latest_release = False
     most_recent_limit = None
-    manually_excluded_release_numbers = []
+    manually_excluded_release_codes = []
 
     catalog_releases = program_data["releases"]
     playlist_slots = build_empty_playlist_slots(track_slots)
@@ -85,14 +91,14 @@ def program_detail(slug: str):
         oldest_release_number = parse_int_field("oldest_release_number")
         exclude_latest_release = parse_checkbox("exclude_latest_release")
         most_recent_limit = parse_int_field("most_recent_limit")
-        manually_excluded_release_numbers = parse_int_list("excluded_release_numbers")
+        manually_excluded_release_codes = parse_string_list("excluded_release_codes")
 
         catalog_releases = get_catalog_releases(
             releases=program_data["releases"],
             oldest_release_number=oldest_release_number,
             exclude_latest_release=exclude_latest_release,
             most_recent_limit=most_recent_limit,
-            manually_excluded_release_numbers=manually_excluded_release_numbers,
+            manually_excluded_release_codes=manually_excluded_release_codes,
         )
 
         random_slot_number = parse_int_field("random_slot_number")
@@ -116,7 +122,7 @@ def program_detail(slug: str):
         oldest_release_number=oldest_release_number,
         exclude_latest_release=exclude_latest_release,
         most_recent_limit=most_recent_limit,
-        manually_excluded_release_numbers=manually_excluded_release_numbers,
+        manually_excluded_release_codes=manually_excluded_release_codes,
         playlist_slots=playlist_slots,
         all_track_counts_by_slot=all_track_counts_by_slot,
         filtered_track_counts_by_slot=filtered_track_counts_by_slot,

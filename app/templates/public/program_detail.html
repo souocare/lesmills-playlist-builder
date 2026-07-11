@@ -21,6 +21,7 @@
 
 <form method="post" class="builder-form">
     <section class="builder-panel catalog-panel">
+        {% set latest_release = releases[0] if releases else none %}
         <div class="step-heading">
             <span class="step-number">1</span>
 
@@ -56,16 +57,22 @@
                 </small>
             </div>
 
-            <label class="toggle-card catalog-toggle">
+            <label class="checkbox-row">
                 <input
                     type="checkbox"
                     name="exclude_latest_release"
+                    id="exclude_latest_release"
                     {% if exclude_latest_release %}checked{% endif %}
                 >
 
                 <span>
-                    <strong>Exclude latest release</strong>
-                    <small>Skip the newest release for now.</small>
+                    Exclude latest release
+
+                    {% if latest_release %}
+                        <small class="inline-help">
+                            Latest: {{ latest_release.title }}
+                        </small>
+                    {% endif %}
                 </span>
             </label>
 
@@ -93,29 +100,51 @@
             </div>
         </div>
 
-        <div class="form-group catalog-exclusions">
-            <label>
-                Exclude specific releases
-            </label>
+        <div class="form-field">
+            <label for="excluded_releases_dropdown_button">Exclude specific releases</label>
 
-            <div class="compact-release-grid">
-                {% for release in releases %}
-                    <label class="compact-check">
-                        <input
-                            type="checkbox"
-                            name="excluded_release_numbers"
-                            value="{{ release.sort_order }}"
-                            {% if release.sort_order | int in manually_excluded_release_numbers %}checked{% endif %}
+            <div class="release-multiselect" id="excluded_releases_multiselect">
+                <button
+                    id="excluded_releases_dropdown_button"
+                    class="release-multiselect-button"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="excluded_releases_dropdown_panel"
+                >
+                    <span id="excluded_releases_summary">No releases excluded</span>
+                    <span class="release-multiselect-arrow">▾</span>
+                </button>
+
+                <div
+                    id="excluded_releases_dropdown_panel"
+                    class="release-multiselect-panel"
+                    hidden
+                >
+                    {% for release in releases %}
+                        <button
+                            type="button"
+                            class="release-multiselect-option"
+                            data-release-code="{{ release.code }}"
+                            data-release-label="{{ release.title }}"
+                            aria-pressed="{% if release.code in manually_excluded_release_codes %}true{% else %}false{% endif %}"
                         >
+                            {{ release.title }}
+                        </button>
 
-                        <span>{{ release.display_number }}</span>
-                    </label>
-                {% endfor %}
+                        <input
+                            type="hidden"
+                            name="excluded_release_codes"
+                            value="{{ release.code }}"
+                            data-release-hidden-input="{{ release.code }}"
+                            {% if release.code not in manually_excluded_release_codes %}disabled{% endif %}
+                        >
+                    {% endfor %}
+                </div>
             </div>
 
-            <small>
-                These releases will not be used, even if they match the catalog settings above.
-            </small>
+            <p class="field-help">
+                Select releases to remove from the available catalog.
+            </p>
         </div>
 
         <!-- <div class="catalog-summary">

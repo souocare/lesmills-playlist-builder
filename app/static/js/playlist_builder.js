@@ -21,6 +21,12 @@
     const keepExistingTracksButton = document.getElementById("keep_existing_tracks");
     const fillAllRandomlyButton = document.getElementById("fill_all_randomly");
 
+    const excludedReleasesMultiselect = document.getElementById("excluded_releases_multiselect");
+    const excludedReleasesButton = document.getElementById("excluded_releases_dropdown_button");
+    const excludedReleasesPanel = document.getElementById("excluded_releases_dropdown_panel");
+    const excludedReleaseOptions = document.querySelectorAll("[data-release-code]");
+    const excludedReleaseHiddenInputs = document.querySelectorAll("[data-release-hidden-input]");
+
     let pendingFillSelections = [];
 
     function getOldestReleaseNumber() {
@@ -57,6 +63,94 @@
         return [...items].sort((a, b) => getReleaseSortOrder(b) - getReleaseSortOrder(a));
     }
 
+    function getManuallyExcludedReleaseCodes() {
+    return Array.from(excludedReleaseOptions)
+        .filter((option) => option.getAttribute("aria-pressed") === "true")
+        .map((option) => option.dataset.releaseCode);
+}
+
+
+    function setExcludedReleaseOptionState(option, isSelected) {
+        const releaseCode = option.dataset.releaseCode;
+        const hiddenInput = document.querySelector(
+            `[data-release-hidden-input="${releaseCode}"]`
+        );
+
+        option.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        option.classList.toggle("is-selected", isSelected);
+
+        if (hiddenInput) {
+            hiddenInput.disabled = !isSelected;
+        }
+    }
+
+
+    function toggleExcludedReleaseOption(option) {
+        const isCurrentlySelected = option.getAttribute("aria-pressed") === "true";
+
+        setExcludedReleaseOptionState(option, !isCurrentlySelected);
+        updateExcludedReleasesSummary();
+        updateCatalogSummary();
+        renderSearchResults();
+    }
+
+
+    function openExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel || !excludedReleasesButton) {
+            return;
+        }
+
+        excludedReleasesPanel.hidden = false;
+        excludedReleasesButton.setAttribute("aria-expanded", "true");
+    }
+
+
+    function closeExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel || !excludedReleasesButton) {
+            return;
+        }
+
+        excludedReleasesPanel.hidden = true;
+        excludedReleasesButton.setAttribute("aria-expanded", "false");
+    }
+
+
+    function toggleExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel) {
+            return;
+        }
+
+        if (excludedReleasesPanel.hidden) {
+            openExcludedReleasesDropdown();
+        } else {
+            closeExcludedReleasesDropdown();
+        }
+    }
+
+
+    function updateExcludedReleasesSummary() {
+        const summary = document.getElementById("excluded_releases_summary");
+
+        if (!summary) {
+            return;
+        }
+
+        const selectedOptions = Array.from(excludedReleaseOptions)
+            .filter((option) => option.getAttribute("aria-pressed") === "true");
+
+        if (selectedOptions.length === 0) {
+            summary.textContent = "No releases excluded";
+            return;
+        }
+
+        if (selectedOptions.length === 1) {
+            summary.textContent = selectedOptions[0].dataset.releaseLabel;
+            return;
+        }
+
+        summary.textContent = `${selectedOptions.length} releases excluded`;
+    }
+
     function getFilteredCatalogReleases() {
         let catalog = sortOldestFirst(releases);
 
@@ -83,15 +177,15 @@
             catalog = sortOldestFirst(catalog);
         }
 
-        const excludedReleaseNumbers = getExcludedReleaseNumbers();
+        const manuallyExcludedReleaseCodes = getManuallyExcludedReleaseCodes();
 
-        if (excludedReleaseNumbers.length > 0) {
-            catalog = catalog.filter(
-                (release) => !excludedReleaseNumbers.includes(release.number)
-            );
+        if (manuallyExcludedReleaseCodes.length > 0) {
+            catalog = catalog.filter((release) => {
+                return !manuallyExcludedReleaseCodes.includes(String(release.code));
+            });
         }
 
-        return catalog;
+        return sortNewestFirst(catalog);
     }
 
     function getTracksFromCatalog() {
@@ -322,6 +416,85 @@
         return !selectedTrackElement.classList.contains("empty-track");
     }
 
+    function setExcludedReleaseOptionState(option, isSelected) {
+        const releaseCode = option.dataset.releaseCode;
+        const hiddenInput = document.querySelector(
+            `[data-release-hidden-input="${releaseCode}"]`
+        );
+
+        option.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        option.classList.toggle("is-selected", isSelected);
+
+        if (hiddenInput) {
+            hiddenInput.disabled = !isSelected;
+        }
+    }
+
+
+    function toggleExcludedReleaseOption(option) {
+        const isCurrentlySelected = option.getAttribute("aria-pressed") === "true";
+
+        setExcludedReleaseOptionState(option, !isCurrentlySelected);
+        updateExcludedReleasesSummary();
+        updateCatalogSummary();
+        renderSearchResults();
+    }
+
+    function openExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel || !excludedReleasesButton) {
+            return;
+        }
+
+        excludedReleasesPanel.hidden = false;
+        excludedReleasesButton.setAttribute("aria-expanded", "true");
+    }
+
+
+    function closeExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel || !excludedReleasesButton) {
+            return;
+        }
+
+        excludedReleasesPanel.hidden = true;
+        excludedReleasesButton.setAttribute("aria-expanded", "false");
+    }
+
+
+    function toggleExcludedReleasesDropdown() {
+        if (!excludedReleasesPanel) {
+            return;
+        }
+
+        if (excludedReleasesPanel.hidden) {
+            openExcludedReleasesDropdown();
+        } else {
+            closeExcludedReleasesDropdown();
+        }
+    }
+
+    function updateExcludedReleasesSummary() {
+        const summary = document.getElementById("excluded_releases_summary");
+
+        if (!summary) {
+            return;
+        }
+
+        const selectedOptions = Array.from(excludedReleaseOptions)
+            .filter((option) => option.getAttribute("aria-pressed") === "true");
+
+        if (selectedOptions.length === 0) {
+            summary.textContent = "No releases excluded";
+            return;
+        }
+
+        if (selectedOptions.length === 1) {
+            summary.textContent = selectedOptions[0].dataset.releaseLabel;
+            return;
+        }
+
+        summary.textContent = `${selectedOptions.length} releases excluded`;
+    }
+
 
     function getThemeFillSelections() {
         const selectedFilters = getSelectedThemeFilters();
@@ -482,6 +655,12 @@
         return selections;
     }
 
+    function getManuallyExcludedReleaseCodes() {
+        return Array.from(excludedReleaseOptions)
+            .filter((option) => option.getAttribute("aria-pressed") === "true")
+            .map((option) => option.dataset.releaseCode);
+    }
+
 
     function fillAllRandomly() {
         const selections = getRandomFillSelections();
@@ -575,6 +754,38 @@
                 }
             });
         }
+
+        if (excludedReleasesButton) {
+            excludedReleasesButton.addEventListener("click", toggleExcludedReleasesDropdown);
+        }
+
+        excludedReleaseOptions.forEach((option) => {
+            const isInitiallySelected = option.getAttribute("aria-pressed") === "true";
+
+            setExcludedReleaseOptionState(option, isInitiallySelected);
+
+            option.addEventListener("click", () => {
+                toggleExcludedReleaseOption(option);
+            });
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!excludedReleasesMultiselect) {
+                return;
+            }
+
+            if (!excludedReleasesMultiselect.contains(event.target)) {
+                closeExcludedReleasesDropdown();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeExcludedReleasesDropdown();
+            }
+        });
+
+        updateExcludedReleasesSummary();
     }
 
     bindEvents();
