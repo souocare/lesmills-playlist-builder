@@ -1,0 +1,559 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script id="admin-track-options-data" type="application/json">
+    {
+        "genres": {{ existing_genres | tojson }},
+        "difficulties": {{ existing_difficulties | tojson }},
+        "tags": {{ existing_tags | tojson }}
+    }
+</script>
+
+<section class="admin-header">
+    <div>
+        <h1>Admin · Tracks</h1>
+        <p>Edit track metadata such as genre, difficulty, and tags.</p>
+    </div>
+
+    <div class="admin-header-actions">
+        <button
+            type="button"
+            class="button button-primary"
+            id="open_add_track_modal"
+        >
+            + Add Track
+        </button>
+
+        <button
+            type="button"
+            class="button button-primary"
+            id="open_add_release_modal"
+        >
+            + Add Release
+        </button>
+
+        <form method="post" action="{{ url_for('admin.logout') }}">
+            <button type="submit" class="button">
+                Logout
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="admin-filters-card">
+    <form id="admin_filters_form" method="get" class="admin-filters">
+        <div class="form-field">
+            <label for="program_id">Program</label>
+            <select id="program_id" name="program_id" class="input-field">
+                <option value="">All programs</option>
+                {% for program in programs %}
+                    <option
+                        value="{{ program.id }}"
+                        {% if selected_program_id == program.id %}selected{% endif %}
+                    >
+                        {{ program.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="release_id">Release</label>
+            <select id="release_id" name="release_id" class="input-field">
+                <option value="">All releases</option>
+                {% for release in all_releases %}
+                    <option
+                        value="{{ release.id }}"
+                        {% if selected_release_id == release.id %}selected{% endif %}
+                    >
+                        {{ release.title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="slot_number">Track number</label>
+            <select id="slot_number" name="slot_number" class="input-field">
+                <option value="">All tracks</option>
+                {% for number in range(1, 11) %}
+                    <option
+                        value="{{ number }}"
+                        {% if selected_slot_number == number %}selected{% endif %}
+                    >
+                        {{ number }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="variant_type">Type</label>
+            <select id="variant_type" name="variant_type" class="input-field">
+                <option value="">All types</option>
+                <option value="main" {% if selected_variant_type == "main" %}selected{% endif %}>
+                    Main
+                </option>
+                <option value="bonus" {% if selected_variant_type == "bonus" %}selected{% endif %}>
+                    Bonus
+                </option>
+                <option value="alternative" {% if selected_variant_type == "alternative" %}selected{% endif %}>
+                    Alternative
+                </option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="search">Search</label>
+            <input
+                id="search"
+                name="search"
+                type="text"
+                class="input-field"
+                value="{{ search }}"
+                placeholder="Title, artist, source code..."
+            >
+        </div>
+
+        <div class="admin-filter-actions">
+            <a href="{{ url_for('admin.tracks') }}" class="button">
+                Reset
+            </a>
+        </div>
+    </form>
+</section>
+
+<section class="admin-table-card">
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Program</th>
+                    <th>Release</th>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Song</th>
+                    <th>Artist</th>
+                    <th>Genre</th>
+                    <th>Difficulty</th>
+                    <th>Tags</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for track in tracks %}
+                    <tr>
+                        <form method="post">
+                            <input type="hidden" name="form_action" value="update_track">
+                            <input type="hidden" name="track_id" value="{{ track.id }}">
+
+                            <td>{{ track.release.program.name }}</td>
+                            <td>{{ track.release.display_number }}</td>
+                            <td>
+                                {{ track.source_track_number or track.slot.number }}
+                            </td>
+                            <td>{{ track.variant_type }}</td>
+                            <td>
+                                <strong>{{ track.title }}</strong>
+                                {% if track.source_code %}
+                                    <small>{{ track.source_code }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ track.artist }}</td>
+                            <td>
+                                <div
+                                    class="chip-editor"
+                                    data-chip-editor
+                                    data-chip-type="genre"
+                                    data-single-value="true"
+                                >
+                                    <input type="hidden" name="genre" value="{{ track.genre or '' }}" data-chip-hidden>
+
+                                    <div class="chip-list" data-chip-list></div>
+
+                                    <input
+                                        class="chip-input"
+                                        type="text"
+                                        placeholder="Add genre..."
+                                        autocomplete="off"
+                                        data-chip-input
+                                    >
+
+                                    <div class="chip-suggestions" data-chip-suggestions hidden></div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div
+                                    class="chip-editor"
+                                    data-chip-editor
+                                    data-chip-type="difficulty"
+                                    data-single-value="true"
+                                >
+                                    <input type="hidden" name="difficulty" value="{{ track.difficulty or '' }}" data-chip-hidden>
+
+                                    <div class="chip-list" data-chip-list></div>
+
+                                    <input
+                                        class="chip-input"
+                                        type="text"
+                                        placeholder="Add difficulty..."
+                                        autocomplete="off"
+                                        data-chip-input
+                                    >
+
+                                    <div class="chip-suggestions" data-chip-suggestions hidden></div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div
+                                    class="chip-editor"
+                                    data-chip-editor
+                                    data-chip-type="tags"
+                                    data-single-value="false"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="tags"
+                                        value="{{ track.tags | map(attribute='tag') | join(', ') }}"
+                                        data-chip-hidden
+                                    >
+
+                                    <div class="chip-list" data-chip-list></div>
+
+                                    <input
+                                        class="chip-input"
+                                        type="text"
+                                        placeholder="Add tag..."
+                                        autocomplete="off"
+                                        data-chip-input
+                                    >
+
+                                    <div class="chip-suggestions" data-chip-suggestions hidden></div>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="submit" class="mini-button">
+                                    Save
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if tracks|length == 300 %}
+        <p class="field-help">
+            Showing first 300 results. Use filters to narrow the list.
+        </p>
+    {% endif %}
+</section>
+
+<div id="add_track_modal" class="modal-backdrop" hidden>
+    <div class="modal-card admin-track-modal" role="dialog" aria-modal="true" aria-labelledby="add_track_modal_title">
+        <div class="modal-header">
+            <div>
+                <h3 id="add_track_modal_title">Add Track</h3>
+                <p>Add a track to a release and keep metadata organized.</p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close-button"
+                id="close_add_track_modal"
+                aria-label="Close"
+            >
+                ×
+            </button>
+        </div>
+
+        <form method="post" class="admin-track-form">
+            <input type="hidden" name="form_action" value="create_track">
+
+            <div class="admin-track-form-grid">
+                <div class="form-field">
+                    <label for="new_release_id">Release</label>
+                    <select id="new_release_id" name="release_id" class="input-field" required>
+                        <option value="">Select release</option>
+                        {% for release in all_releases %}
+                            <option value="{{ release.id }}">
+                                {{ release.program.name }} · {{ release.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="new_slot_number">Track slot</label>
+                    <select id="new_slot_number" name="slot_number" class="input-field" required>
+                        <option value="">Select slot</option>
+                        {% for number in range(1, 11) %}
+                            <option value="{{ number }}">{{ number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="new_variant_type">Type</label>
+                    <select id="new_variant_type" name="variant_type" class="input-field">
+                        <option value="main">Main</option>
+                        <option value="bonus">Bonus</option>
+                        <option value="alternative">Alternative</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="new_source_track_number">Source track number</label>
+                    <input
+                        id="new_source_track_number"
+                        name="source_track_number"
+                        class="input-field"
+                        placeholder="1A, 5B, BON08, ALT09..."
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="new_source_code">Source code</label>
+                    <input
+                        id="new_source_code"
+                        name="source_code"
+                        class="input-field"
+                        placeholder="BC10001A, BC100BON08..."
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="new_group_key">Group key</label>
+                    <input
+                        id="new_group_key"
+                        name="group_key"
+                        class="input-field"
+                        placeholder="Leave empty to generate automatically"
+                    >
+                    <p class="field-help">
+                        Use the same group key for inseparable tracks like 1A + 1B.
+                    </p>
+                </div>
+
+                <div class="form-field">
+                    <label for="new_segment">Segment</label>
+                    <input
+                        id="new_segment"
+                        name="segment"
+                        class="input-field"
+                        placeholder="A, B, C..."
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="new_duration">Duration</label>
+                    <input
+                        id="new_duration"
+                        name="duration"
+                        class="input-field"
+                        placeholder="4:35"
+                    >
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="new_title">Song title</label>
+                    <input
+                        id="new_title"
+                        name="title"
+                        class="input-field"
+                        required
+                    >
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="new_artist">Artist</label>
+                    <input
+                        id="new_artist"
+                        name="artist"
+                        class="input-field"
+                        required
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="new_genre">Genre</label>
+                    <input
+                        id="new_genre"
+                        name="genre"
+                        class="input-field"
+                        placeholder="Pop, EDM..."
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="new_difficulty">Difficulty</label>
+                    <input
+                        id="new_difficulty"
+                        name="difficulty"
+                        class="input-field"
+                        placeholder="Easy, Medium, Hard..."
+                    >
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="new_tags">Tags</label>
+                    <input
+                        id="new_tags"
+                        name="tags"
+                        class="input-field"
+                        placeholder="Beast Mode, Summer, Sing-Along"
+                    >
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="button button-primary">
+                    Save Track
+                </button>
+
+                <button type="button" class="button" id="cancel_add_track_modal">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="add_release_modal" class="modal-backdrop" hidden>
+    <div class="modal-card admin-track-modal" role="dialog" aria-modal="true" aria-labelledby="add_release_modal_title">
+        <div class="modal-header">
+            <div>
+                <h3 id="add_release_modal_title">Add Release</h3>
+                <p>Create a new release and optionally add tracks in bulk.</p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close-button"
+                id="close_add_release_modal"
+                aria-label="Close"
+            >
+                ×
+            </button>
+        </div>
+
+        <form method="post" class="admin-track-form">
+            <input type="hidden" name="form_action" value="create_release">
+
+            <div class="admin-track-form-grid">
+                <div class="form-field">
+                    <label for="release_program_id">Program</label>
+                    <select id="release_program_id" name="program_id" class="input-field" required>
+                        <option value="">Select program</option>
+                        {% for program in programs %}
+                            <option value="{{ program.id }}">
+                                {{ program.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="release_code">Release code</label>
+                    <input
+                        id="release_code"
+                        name="code"
+                        class="input-field"
+                        placeholder="107, united..."
+                        required
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="release_display_number">Display number</label>
+                    <input
+                        id="release_display_number"
+                        name="display_number"
+                        class="input-field"
+                        placeholder="107, United..."
+                        required
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="release_sort_order">Sort order</label>
+                    <input
+                        id="release_sort_order"
+                        name="sort_order"
+                        class="input-field"
+                        placeholder="107, 113.5..."
+                        required
+                    >
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="release_title">Release title</label>
+                    <input
+                        id="release_title"
+                        name="title"
+                        class="input-field"
+                        placeholder="BODYCOMBAT 107"
+                        required
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="release_year">Year</label>
+                    <input
+                        id="release_year"
+                        name="year"
+                        class="input-field"
+                        placeholder="2026"
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="release_quarter">Quarter</label>
+                    <select id="release_quarter" name="quarter" class="input-field">
+                        <option value="">Unknown</option>
+                        <option value="Q1">Q1</option>
+                        <option value="Q2">Q2</option>
+                        <option value="Q3">Q3</option>
+                        <option value="Q4">Q4</option>
+                    </select>
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="release_bulk_tracks">Bulk tracks</label>
+                    <textarea
+                        id="release_bulk_tracks"
+                        name="bulk_tracks"
+                        class="input-field admin-bulk-textarea"
+                        rows="12"
+                        placeholder="1A | Barricade (Radio Edit) | Axwell | 5:03
+1B | Tambor | Sak Noel | 4:07
+2 | Don’t Stop | MUZZ | 5:19
+BON08 | Kick It Down | Dan Aux | 5:01
+ALT09 | Used To | Nbhd Nick | 4:22"
+                    ></textarea>
+
+                    <p class="field-help">
+                        Format: track number | title | artist | duration | genre | difficulty | tags
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="button button-primary">
+                    Create Release
+                </button>
+
+                <button type="button" class="button" id="cancel_add_release_modal">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin_tracks.js') }}"></script>
+{% endblock %}
