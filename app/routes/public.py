@@ -16,6 +16,12 @@ from app.services.program_repository import (
     release_to_dict,
 )
 
+from flask import flash, redirect, url_for
+from app.database import programs_db as programs_db
+from app.models import Track
+from app.database import programs_db as db
+from app.user_models import TrackChangeSuggestion
+
 
 public_bp = Blueprint("public", __name__)
 
@@ -152,3 +158,33 @@ def release_detail(slug: str, release_code: str):
         },
         release=release_data,
     )
+
+@public_bp.route("/suggest-track-change", methods=["POST"])
+def suggest_track_change():
+    track_id = request.form.get("track_id", type=int)
+
+    if track_id is None:
+        abort(400)
+
+    track = Track.query.get_or_404(track_id)
+
+    suggestion = TrackChangeSuggestion(
+        track_id=track.id,
+        program_slug=track.release.program.slug,
+        release_code=track.release.code,
+        suggested_title=request.form.get("title") or None,
+        suggested_artist=request.form.get("artist") or None,
+        suggested_duration=request.form.get("duration") or None,
+        suggested_genre=request.form.get("genre") or None,
+        suggested_difficulty=request.form.get("difficulty") or None,
+        suggested_tags=request.form.get("tags") or None,
+        notes=request.form.get("notes") or None,
+        status="pending",
+    )
+
+    db.session.add(suggestion)
+    db.session.commit()
+
+    flash("Suggestion sent and waiting for review.", "success")
+
+    return redirect(url_for("public.program_detail", slug=track.release.program.slug))

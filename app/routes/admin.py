@@ -14,6 +14,9 @@ import re
 from app.database import programs_db as db
 from app.models import Program, Release, Track, TrackSlot, TrackTag
 
+from datetime import datetime, timezone
+
+from app.user_models import TrackChangeSuggestion
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -222,6 +225,43 @@ def logout():
 @admin_required
 def dashboard():
     return redirect(url_for("admin.tracks"))
+
+
+@admin_bp.route("/suggestions", methods=["GET", "POST"])
+@admin_required
+def suggestions():
+    if request.method == "POST":
+        suggestion_id = request.form.get("suggestion_id", type=int)
+        status = request.form.get("status", "reviewed")
+        review_notes = request.form.get("review_notes") or None
+
+        suggestion = TrackChangeSuggestion.query.get_or_404(suggestion_id)
+
+        suggestion.status = status
+        suggestion.reviewed_at = datetime.now(timezone.utc)
+        suggestion.review_notes = review_notes
+
+        db.session.commit()
+
+        flash("Suggestion updated.", "success")
+        return redirect(url_for("admin.suggestions"))
+
+    status = request.args.get("status", "pending")
+
+    query = TrackChangeSuggestion.query
+
+    if status:
+        query = query.filter_by(status=status)
+
+    suggestions = query.order_by(
+        TrackChangeSuggestion.created_at.desc()
+    ).all()
+
+    return render_template(
+        "admin/suggestions.html",
+        suggestions=suggestions,
+        selected_status=status,
+    )
 
 
 @admin_bp.route("/tracks", methods=["GET", "POST"])

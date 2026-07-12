@@ -1126,3 +1126,55 @@ section p {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     line-height: 1.5;
 }
+
+.public-catalog-section {
+    margin-top: 2rem;
+}
+
+.public-catalog-filters {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.public-catalog-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--panel);
+}
+
+.public-catalog-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+}
+
+.public-catalog-table th,
+.public-catalog-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.public-catalog-table th {
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.public-catalog-table td small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--muted);
+}
+
+@media (max-width: 900px) {
+    .public-catalog-filters {
+        grid-template-columns: 1fr;
+    }
+}

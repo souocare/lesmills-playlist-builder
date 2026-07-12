@@ -391,35 +391,141 @@
     </div>
 </form>
 
-<section>
-    <h2>Releases</h2>
+<section class="public-catalog-section">
+    <div class="section-heading">
+        <h2>Releases - Track Catalog</h2>
+        <p>Browse tracks in this program and suggest metadata changes.</p>
+    </div>
 
-    <div class="card-grid">
-        {% for release in releases %}
-            <article class="card">
-                <h3>{{ release.title }}</h3>
+    <div class="public-catalog-filters">
+        <input
+            id="public_catalog_search"
+            class="input-field"
+            type="text"
+            placeholder="Search title, artist, release, genre, tags..."
+        >
 
-                {% if release.year or release.quarter %}
-                    <p>
-                        {% if release.year %}
-                            {{ release.year }}
-                        {% endif %}
+        <select id="public_catalog_release" class="input-field">
+            <option value="">All releases</option>
+            {% for release in releases %}
+                <option value="{{ release.code }}">
+                    {{ release.title }}
+                </option>
+            {% endfor %}
+        </select>
 
-                        {% if release.quarter %}
-                            · {{ release.quarter }}
-                        {% endif %}
-                    </p>
-                {% endif %}
+        <select id="public_catalog_slot" class="input-field">
+            <option value="">All tracks</option>
+            {% for slot in playlist_slots %}
+                <option value="{{ slot.slot }}">
+                    {{ slot.slot }} · {{ slot.slot_name }}
+                </option>
+            {% endfor %}
+        </select>
 
-                <a class="button" href="{{ url_for(
-                    'public.release_detail',
-                    slug=program.slug,
-                    release_code=release.code
-                ) }}">
-                    View release
-                </a>
-            </article>
-        {% endfor %}
+        <select id="public_catalog_variant" class="input-field">
+            <option value="">All types</option>
+            <option value="main">Main</option>
+            <option value="bonus">Bonus</option>
+            <option value="alternative">Alternative</option>
+        </select>
+    </div>
+
+    <div class="public-catalog-table-wrapper">
+        <table class="public-catalog-table">
+            <thead>
+                <tr>
+                    <th>Release</th>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Song</th>
+                    <th>Artist</th>
+                    <th>Duration</th>
+                    <th>Genre</th>
+                    <th>Difficulty</th>
+                    <th>Tags</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody id="public_catalog_table_body"></tbody>
+        </table>
     </div>
 </section>
+
+<div id="suggest_change_modal" class="modal-backdrop" hidden>
+    <div class="modal-card admin-track-modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <div>
+                <h3>Suggest track change</h3>
+                <p id="suggest_change_track_label"></p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close-button"
+                id="close_suggest_change_modal"
+            >
+                ×
+            </button>
+        </div>
+
+        <form method="post" action="{{ url_for('public.suggest_track_change') }}" class="admin-track-form">
+            <input type="hidden" name="track_id" id="suggest_track_id">
+
+            <div class="admin-track-form-grid">
+                <div class="form-field admin-track-form-wide">
+                    <label for="suggest_title">Title</label>
+                    <input id="suggest_title" name="title" class="input-field">
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="suggest_artist">Artist</label>
+                    <input id="suggest_artist" name="artist" class="input-field">
+                </div>
+
+                <div class="form-field">
+                    <label for="suggest_duration">Duration</label>
+                    <input id="suggest_duration" name="duration" class="input-field">
+                </div>
+
+                <div class="form-field">
+                    <label for="suggest_genre">Genre</label>
+                    <input id="suggest_genre" name="genre" class="input-field">
+                </div>
+
+                <div class="form-field">
+                    <label for="suggest_difficulty">Difficulty</label>
+                    <input id="suggest_difficulty" name="difficulty" class="input-field">
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="suggest_tags">Tags</label>
+                    <input id="suggest_tags" name="tags" class="input-field">
+                </div>
+
+                <div class="form-field admin-track-form-wide">
+                    <label for="suggest_notes">Notes</label>
+                    <textarea
+                        id="suggest_notes"
+                        name="notes"
+                        class="input-field admin-bulk-textarea"
+                        rows="4"
+                        placeholder="Explain what should change..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="button button-primary">
+                    Send suggestion
+                </button>
+
+                <button type="button" class="button" id="cancel_suggest_change_modal">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

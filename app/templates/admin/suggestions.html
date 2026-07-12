@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-header">
+    <div>
+        <h1>Admin · Suggestions</h1>
+        <p>Review suggested metadata changes.</p>
+    </div>
+
+    <a href="{{ url_for('admin.tracks') }}" class="button">
+        Back to tracks
+    </a>
+</section>
+
+<section class="admin-filters-card">
+    <form method="get" class="admin-filters">
+        <div class="form-field">
+            <label for="status">Status</label>
+            <select id="status" name="status" class="input-field" onchange="this.form.submit()">
+                <option value="pending" {% if selected_status == "pending" %}selected{% endif %}>Pending</option>
+                <option value="reviewed" {% if selected_status == "reviewed" %}selected{% endif %}>Reviewed</option>
+                <option value="rejected" {% if selected_status == "rejected" %}selected{% endif %}>Rejected</option>
+                <option value="" {% if selected_status == "" %}selected{% endif %}>All</option>
+            </select>
+        </div>
+    </form>
+</section>
+
+<section class="admin-table-card">
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Program</th>
+                    <th>Release</th>
+                    <th>Track ID</th>
+                    <th>Suggested changes</th>
+                    <th>Status</th>
+                    <th>Review</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for suggestion in suggestions %}
+                    <tr>
+                        <td>{{ suggestion.created_at }}</td>
+                        <td>{{ suggestion.program_slug }}</td>
+                        <td>{{ suggestion.release_code }}</td>
+                        <td>{{ suggestion.track_id }}</td>
+                        <td>
+                            {% if suggestion.suggested_title %}
+                                <strong>Title:</strong> {{ suggestion.suggested_title }}<br>
+                            {% endif %}
+                            {% if suggestion.suggested_artist %}
+                                <strong>Artist:</strong> {{ suggestion.suggested_artist }}<br>
+                            {% endif %}
+                            {% if suggestion.suggested_duration %}
+                                <strong>Duration:</strong> {{ suggestion.suggested_duration }}<br>
+                            {% endif %}
+                            {% if suggestion.suggested_genre %}
+                                <strong>Genre:</strong> {{ suggestion.suggested_genre }}<br>
+                            {% endif %}
+                            {% if suggestion.suggested_difficulty %}
+                                <strong>Difficulty:</strong> {{ suggestion.suggested_difficulty }}<br>
+                            {% endif %}
+                            {% if suggestion.suggested_tags %}
+                                <strong>Tags:</strong> {{ suggestion.suggested_tags }}<br>
+                            {% endif %}
+                            {% if suggestion.notes %}
+                                <strong>Notes:</strong> {{ suggestion.notes }}
+                            {% endif %}
+                        </td>
+                        <td>{{ suggestion.status }}</td>
+                        <td>
+                            <form method="post">
+                                <input type="hidden" name="suggestion_id" value="{{ suggestion.id }}">
+
+                                <textarea
+                                    name="review_notes"
+                                    class="input-field"
+                                    rows="2"
+                                    placeholder="Review notes..."
+                                ></textarea>
+
+                                <div class="admin-filter-actions">
+                                    <button name="status" value="reviewed" class="mini-button" type="submit">
+                                        Mark reviewed
+                                    </button>
+
+                                    <button name="status" value="rejected" class="mini-button mini-button-secondary" type="submit">
+                                        Reject
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

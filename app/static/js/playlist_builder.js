@@ -30,6 +30,16 @@
     const includeBonusTracksCheckbox = document.getElementById("include_bonus_tracks");
     const includeAlternativeTracksCheckbox = document.getElementById("include_alternative_tracks");
 
+
+    const publicCatalogSearchInput = document.getElementById("public_catalog_search");
+    const publicCatalogReleaseSelect = document.getElementById("public_catalog_release");
+    const publicCatalogSlotSelect = document.getElementById("public_catalog_slot");
+    const publicCatalogVariantSelect = document.getElementById("public_catalog_variant");
+    const publicCatalogTableBody = document.getElementById("public_catalog_table_body");
+    const suggestChangeModal = document.getElementById("suggest_change_modal");
+    const closeSuggestChangeModalButton = document.getElementById("close_suggest_change_modal");
+    const cancelSuggestChangeModalButton = document.getElementById("cancel_suggest_change_modal");
+
     let pendingFillSelections = [];
 
     function getOldestReleaseNumber() {
@@ -799,6 +809,211 @@
 
         fillPlaylistFromSelections(selections, true);
     }
+
+
+    function getAllCatalogRows() {
+        return releases.flatMap((release) => {
+            return (release.tracks || []).map((track) => {
+                return {
+                    id: track.id,
+                    releaseCode: release.code,
+                    releaseTitle: release.title,
+                    releaseNumber: release.display_number || release.number || release.code,
+                    sourceTrackNumber: track.source_track_number || String(track.slot),
+                    slot: track.slot,
+                    slotName: track.slot_name,
+                    variantType: track.variant_type || "main",
+                    title: track.title,
+                    artist: track.artist,
+                    duration: track.duration || "",
+                    genre: track.genre || "",
+                    difficulty: track.difficulty || "",
+                    tags: track.tags || [],
+                    sourceCode: track.source_code || "",
+                };
+            });
+        });
+    }
+
+    function getFilteredPublicCatalogRows() {
+        let rows = getAllCatalogRows();
+
+        const query = normaliseText(publicCatalogSearchInput?.value || "");
+        const releaseCode = publicCatalogReleaseSelect?.value || "";
+        const slot = publicCatalogSlotSelect?.value || "";
+        const variant = publicCatalogVariantSelect?.value || "";
+
+        if (releaseCode) {
+            rows = rows.filter((row) => row.releaseCode === releaseCode);
+        }
+
+        if (slot) {
+            rows = rows.filter((row) => String(row.slot) === String(slot));
+        }
+
+        if (variant) {
+            rows = rows.filter((row) => row.variantType === variant);
+        }
+
+        if (query) {
+            rows = rows.filter((row) => {
+                const searchable = [
+                    row.releaseTitle,
+                    row.releaseNumber,
+                    row.sourceTrackNumber,
+                    row.slotName,
+                    row.variantType,
+                    row.title,
+                    row.artist,
+                    row.duration,
+                    row.genre,
+                    row.difficulty,
+                    row.sourceCode,
+                    ...(row.tags || []),
+                ]
+                    .filter(Boolean)
+                    .map(normaliseText)
+                    .join(" ");
+
+                return searchable.includes(query);
+            });
+        }
+
+        return rows;
+    }
+
+    function renderPublicCatalogTable() {
+        if (!publicCatalogTableBody) {
+            return;
+        }
+
+        const rows = getFilteredPublicCatalogRows();
+
+        publicCatalogTableBody.innerHTML = "";
+
+        if (rows.length === 0) {
+            publicCatalogTableBody.innerHTML = `
+                <tr>
+                    <td colspan="10">No tracks found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        rows.forEach((row) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${escapeHtml(row.releaseNumber)}</td>
+                <td>${escapeHtml(row.sourceTrackNumber)}</td>
+                <td>${escapeHtml(row.variantType)}</td>
+                <td>
+                    <strong>${escapeHtml(row.title)}</strong>
+                    ${
+                        row.sourceCode
+                            ? `<small>${escapeHtml(row.sourceCode)}</small>`
+                            : ""
+                    }
+                </td>
+                <td>${escapeHtml(row.artist)}</td>
+                <td>${escapeHtml(row.duration || "—")}</td>
+                <td>${escapeHtml(row.genre || "—")}</td>
+                <td>${escapeHtml(row.difficulty || "—")}</td>
+                <td>
+                    ${
+                        row.tags.length > 0
+                            ? row.tags.map((tag) => `<span class="metadata-chip">${escapeHtml(tag)}</span>`).join(" ")
+                            : "—"
+                    }
+                </td>
+                <td>
+                    <button
+                        type="button"
+                        class="mini-button"
+                        data-suggest-track-id="${row.id}"
+                    >
+                        Suggest change
+                    </button>
+                </td>
+            `;
+
+            publicCatalogTableBody.appendChild(tr);
+        });
+    }
+
+    function openSuggestChangeModal(trackId) {
+        const row = getAllCatalogRows().find((item) => String(item.id) === String(trackId));
+
+        if (!row || !suggestChangeModal) {
+            return;
+        }
+
+        document.getElementById("suggest_track_id").value = row.id;
+        document.getElementById("suggest_change_track_label").textContent =
+            `${row.releaseTitle} · ${row.sourceTrackNumber} · ${row.title}`;
+
+        document.getElementById("suggest_title").value = row.title;
+        document.getElementById("suggest_artist").value = row.artist;
+        document.getElementById("suggest_duration").value = row.duration;
+        document.getElementById("suggest_genre").value = row.genre;
+        document.getElementById("suggest_difficulty").value = row.difficulty;
+        document.getElementById("suggest_tags").value = row.tags.join(", ");
+        document.getElementById("suggest_notes").value = "";
+
+        suggestChangeModal.hidden = false;
+    }
+
+    function closeSuggestChangeModal() {
+        if (suggestChangeModal) {
+            suggestChangeModal.hidden = true;
+        }
+    }
+
+    [
+        publicCatalogSearchInput,
+        publicCatalogReleaseSelect,
+        publicCatalogSlotSelect,
+        publicCatalogVariantSelect,
+    ].forEach((element) => {
+        if (!element) {
+            return;
+        }
+
+        element.addEventListener("input", renderPublicCatalogTable);
+        element.addEventListener("change", renderPublicCatalogTable);
+    });
+
+    if (publicCatalogTableBody) {
+        publicCatalogTableBody.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-suggest-track-id]");
+
+            if (!button) {
+                return;
+            }
+
+            openSuggestChangeModal(button.dataset.suggestTrackId);
+        });
+    }
+
+    if (closeSuggestChangeModalButton) {
+        closeSuggestChangeModalButton.addEventListener("click", closeSuggestChangeModal);
+    }
+
+    if (cancelSuggestChangeModalButton) {
+        cancelSuggestChangeModalButton.addEventListener("click", closeSuggestChangeModal);
+    }
+
+    if (suggestChangeModal) {
+        suggestChangeModal.addEventListener("click", (event) => {
+            if (event.target === suggestChangeModal) {
+                closeSuggestChangeModal();
+            }
+        });
+    }
+
+    renderPublicCatalogTable();
+
+
 
     function bindEvents() {
         if (searchInput) {

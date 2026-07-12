@@ -15,12 +15,18 @@ def create_app() -> Flask:
         "dev-secret-key-change-me",
     )
 
-    database_uri = os.environ.get(
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
         "PROGRAMS_DATABASE_URI",
         "sqlite:///programs.db",
     )
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
+    app.config["SQLALCHEMY_BINDS"] = {
+        "users": os.environ.get(
+            "USERS_DATABASE_URI",
+            "sqlite:///users.db",
+        )
+    }
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     programs_db.init_app(app)
